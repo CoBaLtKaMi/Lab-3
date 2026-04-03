@@ -1,0 +1,19 @@
+# Visual Studio temporary files
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+bin/
+obj/
+Dockerfile
+*.sln
+
+# Logs
+*.log
+
+# Visual Studio Code
+.vscode/
+
+# macOS
+.DS_Store
