@@ -21,7 +21,7 @@ public class SubscriptionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Subscription>>> GetAll()
+    public async Task<ActionResult<List<Subscription>>> GetAll()
     {
         const string cacheKey = "subscriptions:all";
 
@@ -38,46 +38,5 @@ public class SubscriptionsController : ControllerBase
 
         await _cache.StringSetAsync(cacheKey, JsonSerializer.Serialize(itemsFromDb), TimeSpan.FromMinutes(10));
         return Ok(itemsFromDb);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Subscription>> GetById(int id)
-    {
-        var item = await _context.Subscriptions
-            .Include(s => s.Member)
-            .FirstOrDefaultAsync(s => s.Id == id);
-
-        return item == null ? NotFound() : Ok(item);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Subscription>> Create(Subscription subscription)
-    {
-        _context.Subscriptions.Add(subscription);
-        await _context.SaveChangesAsync();
-        await _cache.KeyDeleteAsync("subscriptions:all");
-        return CreatedAtAction(nameof(GetById), new { id = subscription.Id }, subscription);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Subscription subscription)
-    {
-        if (id != subscription.Id) return BadRequest();
-        _context.Entry(subscription).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        await _cache.KeyDeleteAsync("subscriptions:all");
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var item = await _context.Subscriptions.FindAsync(id);
-        if (item == null) return NotFound();
-
-        _context.Subscriptions.Remove(item);
-        await _context.SaveChangesAsync();
-        await _cache.KeyDeleteAsync("subscriptions:all");
-        return NoContent();
     }
 }

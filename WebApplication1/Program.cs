@@ -6,6 +6,8 @@ using WebApplication1.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ==================== СЕРВИСЫ ====================
+
 var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")
     ?? "Host=localhost;Port=5432;Database=sportclubdb;Username=postgres;Password=secret123";
 
@@ -18,15 +20,15 @@ var redisConn = Environment.GetEnvironmentVariable("REDIS_CONNECTION")
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisConn));
 
-builder.Services.AddControllers();   // ← обязательно
-
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-// Миграции и seeding
+// ==================== МИГРАЦИИ И SEEDING ====================
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -83,13 +85,13 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Middleware
-app.UseRouting();                    // ← добавили явно
+// ==================== MIDDLEWARE ====================
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseHttpMetrics();
 app.MapMetrics();
-app.UseAuthorization();
+
 app.Run();
