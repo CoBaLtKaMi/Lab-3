@@ -6,29 +6,27 @@ using WebApplication1.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// === PostgreSQL ===
 var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")
     ?? "Host=localhost;Port=5432;Database=sportclubdb;Username=postgres;Password=secret123";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// === Redis ===
 var redisConn = Environment.GetEnvironmentVariable("REDIS_CONNECTION")
     ?? "localhost:6379";
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisConn));
 
-// === Важно! Регистрация контроллеров ===
-builder.Services.AddControllers();
+builder.Services.AddControllers();   // ← обязательно
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHttpClient();   // для Prometheus
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-// === Миграции + Seeding ===
+// Миграции и seeding
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -45,7 +43,7 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        if (!db.Members.Any())
+        if (db.Database.CanConnect() && !db.Members.Any())
         {
             var member = new Member
             {
@@ -76,21 +74,22 @@ using (var scope = app.Services.CreateScope())
             });
 
             await db.SaveChangesAsync();
-            Console.WriteLine("✅ Seeding data completed.");
+            Console.WriteLine("✅ Seeding completed.");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Seeding error: {ex.Message}");
+        Console.WriteLine($"❌ Seeding skipped: {ex.Message}");
     }
 }
 
-// === Swagger и метрики ===
+// Middleware
+app.UseRouting();                    // ← добавили явно
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseHttpMetrics();
 app.MapMetrics();
-
+app.UseAuthorization();
 app.Run();
