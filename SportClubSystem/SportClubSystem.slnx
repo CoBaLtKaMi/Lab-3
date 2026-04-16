@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/grafana/" />
+  <Folder Name="/grafana/provisioning/" />
+  <Folder Name="/grafana/provisioning/dashboards/" />
+  <Folder Name="/grafana/provisioning/datasources/" />
+  <Folder Name="/nginx/">
+    <File Path="nginx.conf" />
+  </Folder>
+  <Folder Name="/prometheus/">
+    <File Path="prometheus.yml" />
+  </Folder>
+  <Folder Name="/Элементы решения/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Project Path="SportClubApi.Tests/SportClubApi.Tests.csproj" />
+  <Project Path="SportClubApi/SportClubApi.csproj" />
+  <Project Path="SportClubClient/SportClubClient.csproj" />
+</Solution>
