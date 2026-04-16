@@ -1,78 +1,90 @@
-﻿using SportClubApi.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SportClubApi.Models;
 
 namespace SportClubApi.Data;
 
 public static class DbSeeder
 {
-    public static void Seed(AppDbContext db)
+    public static void Seed(AppDbContext context)
     {
-        if (db.Members.Any())
-            return; // уже засеяно
+        var now = DateTime.UtcNow;
 
-        // Создаём тестовых членов клуба
-        var members = new List<Member>
+        // Проверяем, есть ли уже данные
+        if (context.Members.Any())
         {
-            new Member
-            {
-                FullName = "Иван Петров",
-                Phone = "+79001112233",
-                Email = "ivan@mail.ru",
-                BirthDate = new DateTime(1990, 5, 12, 0, 0, 0, DateTimeKind.Utc)
-            },
-            new Member
-            {
-                FullName = "Мария Сидорова",
-                Phone = "+79004445566",
-                Email = "maria@mail.ru",
-                BirthDate = new DateTime(1995, 8, 23, 0, 0, 0, DateTimeKind.Utc)
-            }
+            Console.WriteLine("✅ Данные уже существуют, seeding пропущен.");
+            return;
+        }
+
+        Console.WriteLine("🌱 Добавляем тестовые данные...");
+
+        // Участники
+        var member1 = new Member
+        {
+            FullName = "Иван Иванов",
+            Phone = "+79161234567",
+            Email = "ivan@example.com",
+            BirthDate = DateTime.SpecifyKind(new DateTime(1995, 5, 15), DateTimeKind.Utc),
+            RegisteredAt = now
         };
 
-        db.Members.AddRange(members);
-        db.SaveChanges();
-
-        // Создаём тренировки
-        var workouts = new List<Workout>
+        var member2 = new Member
         {
-            new Workout
-            {
-                Title = "Йога",
-                Trainer = "Ольга Смирнова",
-                StartsAt = DateTime.UtcNow.AddDays(1),
-                DurationMinutes = 60,
-                Capacity = 15
-            },
-            new Workout
-            {
-                Title = "Бокс",
-                Trainer = "Дмитрий Волков",
-                StartsAt = DateTime.UtcNow.AddDays(2),
-                DurationMinutes = 90,
-                Capacity = 10
-            }
+            FullName = "Анна Петрова",
+            Phone = "+79169876543",
+            Email = "anna@example.com",
+            BirthDate = DateTime.SpecifyKind(new DateTime(2000, 3, 22), DateTimeKind.Utc),
+            RegisteredAt = now
         };
 
-        db.Workouts.AddRange(workouts);
-        db.SaveChanges();
+        context.Members.AddRange(member1, member2);
+        context.SaveChanges();
 
-        // Создаём абонемент для первого члена
-        db.Memberships.Add(new Membership
+        // Тренировки
+        var workout1 = new Workout
         {
-            MemberId = members[0].Id,
+            Name = "Силовая тренировка",
+            Description = "Тренировка на основные группы мышц",
+            DurationMinutes = 60,
+            MaxParticipants = 15
+        };
+
+        var workout2 = new Workout
+        {
+            Name = "Йога для начинающих",
+            Description = "Расслабляющая практика",
+            DurationMinutes = 45,
+            MaxParticipants = 20
+        };
+
+        context.Workouts.AddRange(workout1, workout2);
+        context.SaveChanges();
+
+        // Абонемент
+        var membership1 = new Membership
+        {
+            MemberId = member1.Id,
             Type = "Premium",
-            StartDate = DateTime.UtcNow.AddDays(-30),
-            EndDate = DateTime.UtcNow.AddDays(335),
-            Price = 5000m,
+            StartDate = now.AddDays(-30),
+            EndDate = now.AddDays(300),
+            Price = 4500.00m,
             Status = "Active"
-        });
+        };
 
-        // Записываем первого члена на первую тренировку
-        db.WorkoutRegistrations.Add(new WorkoutRegistration
+        context.Memberships.Add(membership1);
+        context.SaveChanges();
+
+        // Запись на тренировку
+        var registration1 = new WorkoutRegistration
         {
-            MemberId = members[0].Id,
-            WorkoutId = workouts[0].Id
-        });
+            MemberId = member1.Id,
+            WorkoutId = workout1.Id,
+            RegisteredAt = now
+        };
 
-        db.SaveChanges();
+        context.WorkoutRegistrations.Add(registration1);
+        context.SaveChanges();
+
+        Console.WriteLine($"✅ Seeding успешно завершён! Добавлено участников: {context.Members.Count()}");
     }
 }

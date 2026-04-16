@@ -8,19 +8,14 @@ public class Workout
 
     [Required]
     [StringLength(100)]
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(100)]
-    public string Trainer { get; set; } = string.Empty;
+    [StringLength(500)]
+    public string Description { get; set; } = string.Empty;
 
-    public DateTime StartsAt { get; set; }
-
-    [Range(10, 300)]
     public int DurationMinutes { get; set; }
 
-    [Range(1, 100)]
-    public int Capacity { get; set; }
+    public int MaxParticipants { get; set; }
 
     // Навигационное свойство
     public ICollection<WorkoutRegistration> Registrations { get; set; } = new List<WorkoutRegistration>();

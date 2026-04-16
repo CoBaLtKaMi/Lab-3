@@ -12,7 +12,5 @@
   <Folder Name="/Элементы решения/">
     <File Path="docker-compose.yml" />
   </Folder>
-  <Project Path="SportClubApi.Tests/SportClubApi.Tests.csproj" />
   <Project Path="SportClubApi/SportClubApi.csproj" />
-  <Project Path="SportClubClient/SportClubClient.csproj" />
 </Solution>

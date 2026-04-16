@@ -1,49 +1,42 @@
 using Microsoft.EntityFrameworkCore;
 using Prometheus;
-using StackExchange.Redis;
 using SportClubApi.Data;
-using SportClubApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Подключение к PostgreSQL
-var connStr = Environment.GetEnvironmentVariable("CONNECTION_STRING")
-    ?? "Host=localhost;Database=sportclub;Username=postgres;Password=postgres";
+// === Подключение к PostgreSQL ===
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("CONNECTION_STRING")
+    ?? "Host=db;Port=5432;Database=sportclub;Username=postgres;Password=postgres";
 
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connStr));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
-// Подключение Redis
-// Подключение Redis с отключением AbortOnConnectFail (чтобы не падало при запуске без Docker)
-var redisConn = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6379";
-var redisOptions = ConfigurationOptions.Parse(redisConn);
-redisOptions.AbortOnConnectFail = false;   // ← важно!
-
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisOptions));
-builder.Services.AddScoped<CacheService>();
-
-// Добавляем контроллеры и Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Автоматическое применение миграций и seeding данных
-// Автоматическое применение миграций и seeding данных (с обработкой ошибок)
+// === Применение миграций и Seeding с повторными попытками ===
+// Применение миграций и seeding
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
     try
     {
+        Console.WriteLine("🚀 Применяем миграции...");
         db.Database.Migrate();
+        Console.WriteLine("✅ Миграции успешно применены.");
+
+        // Временно отключаем seeding
+        
         DbSeeder.Seed(db);
-        Console.WriteLine("✅ База данных успешно мигрирована и засеяна.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"⚠️ Не удалось подключиться к базе данных: {ex.Message}");
-        Console.WriteLine("   Это нормально, если ты запускаешь без Docker. Продолжаем запуск...");
+        Console.WriteLine($"❌ Ошибка при инициализации базы: {ex.Message}");
     }
 }
 
@@ -53,7 +46,6 @@ app.UseSwaggerUI();
 app.UseHttpMetrics();
 app.MapMetrics();
 
-app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SportClubApi.Data;
 using SportClubApi.Models;
-using SportClubApi.Services;
 
 namespace SportClubApi.Controllers;
 
@@ -11,32 +10,25 @@ namespace SportClubApi.Controllers;
 public class WorkoutsController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly CacheService _cache;
 
-    public WorkoutsController(AppDbContext context, CacheService cache)
+    public WorkoutsController(AppDbContext context)
     {
         _context = context;
-        _cache = cache;
     }
 
-    // GET: api/workouts
+    // GET: api/Workouts
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Workout>>> GetWorkouts()
     {
-        var cacheKey = "workouts_all";
-        var cached = await _cache.GetAsync<List<Workout>>(cacheKey);
-        if (cached != null) return cached;
-
         var workouts = await _context.Workouts
             .Include(w => w.Registrations)
             .ThenInclude(r => r.Member)
             .ToListAsync();
 
-        await _cache.SetAsync(cacheKey, workouts, TimeSpan.FromMinutes(5));
-        return workouts;
+        return Ok(workouts);
     }
 
-    // GET: api/workouts/{id}
+    // GET: api/Workouts/{id}
     [HttpGet("{id}")]
     public async Task<ActionResult<Workout>> GetWorkout(int id)
     {
@@ -45,28 +37,32 @@ public class WorkoutsController : ControllerBase
             .ThenInclude(r => r.Member)
             .FirstOrDefaultAsync(w => w.Id == id);
 
-        if (workout == null) return NotFound();
+        if (workout == null)
+        {
+            return NotFound();
+        }
 
-        return workout;
+        return Ok(workout);
     }
 
-    // POST: api/workouts
+    // POST: api/Workouts
     [HttpPost]
-    public async Task<ActionResult<Workout>> CreateWorkout(Workout workout)
+    public async Task<ActionResult<Workout>> PostWorkout(Workout workout)
     {
         _context.Workouts.Add(workout);
         await _context.SaveChangesAsync();
 
-        await _cache.RemoveAsync("workouts_all");
-
         return CreatedAtAction(nameof(GetWorkout), new { id = workout.Id }, workout);
     }
 
-    // PUT: api/workouts/{id}
+    // PUT: api/Workouts/{id}
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateWorkout(int id, Workout workout)
+    public async Task<IActionResult> PutWorkout(int id, Workout workout)
     {
-        if (id != workout.Id) return BadRequest();
+        if (id != workout.Id)
+        {
+            return BadRequest();
+        }
 
         _context.Entry(workout).State = EntityState.Modified;
 
@@ -76,58 +72,66 @@ public class WorkoutsController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!WorkoutExists(id)) return NotFound();
-            throw;
+            if (!WorkoutExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
         }
 
-        await _cache.RemoveAsync("workouts_all");
         return NoContent();
     }
 
-    // DELETE: api/workouts/{id}
+    // DELETE: api/Workouts/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteWorkout(int id)
     {
         var workout = await _context.Workouts.FindAsync(id);
-        if (workout == null) return NotFound();
+        if (workout == null)
+        {
+            return NotFound();
+        }
 
         _context.Workouts.Remove(workout);
         await _context.SaveChangesAsync();
 
-        await _cache.RemoveAsync("workouts_all");
         return NoContent();
     }
 
-    // Дополнительный эндпоинт: Запись члена на тренировку
-    // POST: api/workouts/{id}/register
+    // Дополнительный endpoint из лабораторной (11 вариант)
+    // POST: api/Workouts/{id}/register
     [HttpPost("{id}/register")]
-    public async Task<IActionResult> RegisterForWorkout(int id, [FromBody] int memberId)
+    public async Task<ActionResult<WorkoutRegistration>> RegisterForWorkout(int id, [FromBody] int memberId)
     {
         var workout = await _context.Workouts
             .Include(w => w.Registrations)
             .FirstOrDefaultAsync(w => w.Id == id);
 
-        if (workout == null) return NotFound("Тренировка не найдена");
+        if (workout == null)
+            return NotFound("Тренировка не найдена");
 
-        if (workout.Registrations.Count >= workout.Capacity)
-            return BadRequest("Тренировка заполнена");
+        // Проверка лимита участников
+        if (workout.Registrations.Count >= workout.MaxParticipants)
+            return BadRequest("Превышен лимит участников на тренировку");
 
-        // Проверка, не записан ли уже участник
+        // Проверка, что участник ещё не записан
         if (workout.Registrations.Any(r => r.MemberId == memberId))
             return BadRequest("Участник уже записан на эту тренировку");
 
         var registration = new WorkoutRegistration
         {
             MemberId = memberId,
-            WorkoutId = id
+            WorkoutId = id,
+            RegisteredAt = DateTime.UtcNow
         };
 
         _context.WorkoutRegistrations.Add(registration);
         await _context.SaveChangesAsync();
 
-        await _cache.RemoveAsync("workouts_all");
-
-        return Ok("Участник успешно записан на тренировку");
+        return Ok(registration);
     }
 
     private bool WorkoutExists(int id)
