@@ -1,0 +1,504 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Администратор — SportClub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg,#1a1a6e,#2e75b6);
+            color: #fff;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            header h1 {
+                font-size: 22px;
+            }
+
+        nav {
+            display: flex;
+            gap: 8px;
+        }
+
+            nav button {
+                background: rgba(255,255,255,0.2);
+                color: #fff;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background .2s;
+            }
+
+                nav button:hover, nav button.active {
+                    background: rgba(255,255,255,0.4);
+                }
+
+        .container {
+            max-width: 1100px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08);
+            margin-bottom: 20px;
+        }
+
+            .card h2 {
+                font-size: 18px;
+                color: #2e75b6;
+                margin-bottom: 16px;
+                border-bottom: 2px solid #e8f0fe;
+                padding-bottom: 8px;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2e75b6;
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        tr:hover td {
+            background: #f5f8ff;
+        }
+
+        .btn {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #2e75b6;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .btn:hover {
+            opacity: .85;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+            .form-row input, .form-row select {
+                padding: 9px 12px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                flex: 1;
+                min-width: 160px;
+                font-size: 14px;
+            }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg,#2e75b6,#1a4a8a);
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+            .stat-box .num {
+                font-size: 36px;
+                font-weight: 700;
+            }
+
+            .stat-box .lbl {
+                font-size: 13px;
+                opacity: .85;
+                margin-top: 4px;
+            }
+
+        section {
+            display: none;
+        }
+
+            section.active {
+                display: block;
+            }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #333;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏋️ SportClub — Панель администратора</h1>
+        <nav>
+            <button class="active" onclick="show('members')">Члены клуба</button>
+            <button onclick="show('workouts')">Тренировки</button>
+            <button onclick="show('memberships')">Абонементы</button>
+            <button onclick="show('stats')">Статистика</button>
+        </nav>
+    </header>
+    <div class="container">
+        <!-- ЧЛЕНЫ КЛУБА -->
+        <section id="members" class="active">
+            <div class="card">
+                <h2>Добавить члена клуба</h2>
+                <div class="form-row">
+                    <input id="m-name" placeholder="ФИО">
+                    <input id="m-phone" placeholder="Телефон">
+                    <input id="m-email" placeholder="Email">
+                    <input id="m-birth" type="date">
+                    <button class="btn btn-primary" onclick="addMember()">Добавить</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Список членов клуба</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ФИО</th>
+                            <th>Телефон</th>
+                            <th>Email</th>
+                            <th>Дата рождения</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="members-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ТРЕНИРОВКИ -->
+        <section id="workouts">
+            <div class="card">
+                <h2>Добавить тренировку</h2>
+                <div class="form-row">
+                    <input id="w-name" placeholder="Название">
+                    <input id="w-trainer" placeholder="Тренер">
+                    <input id="w-desc" placeholder="Описание">
+                    <input id="w-date" type="datetime-local">
+                    <input id="w-dur" type="number" placeholder="Мин.">
+                    <input id="w-cap" type="number" placeholder="Мест">
+                    <button class="btn btn-primary" onclick="addWorkout()">Добавить</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Расписание тренировок</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Тренер</th>
+                            <th>Дата/время</th>
+                            <th>Длит.</th>
+                            <th>Записано/Мест</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workouts-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- АБОНЕМЕНТЫ -->
+        <section id="memberships">
+            <div class="card">
+                <h2>Выдать абонемент</h2>
+                <div class="form-row">
+                    <select id="ms-member"><option value="">-- Выберите члена --</option></select>
+                    <select id="ms-type">
+                        <option value="Standard">Standard</option>
+                        <option value="Premium">Premium</option>
+                        <option value="Student">Student</option>
+                    </select>
+                    <input id="ms-price" type="number" placeholder="Стоимость">
+                    <input id="ms-start" type="date">
+                    <input id="ms-end" type="date">
+                    <button class="btn btn-success" onclick="addMembership()">Выдать</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Все абонементы</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Член клуба</th>
+                            <th>Тип</th>
+                            <th>Начало</th>
+                            <th>Конец</th>
+                            <th>Цена</th>
+                            <th>Статус</th>
+                            <th>Дней осталось</th>
+                            <th>Удалить</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberships-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- СТАТИСТИКА -->
+        <section id="stats">
+            <div class="card">
+                <h2>Общая статистика</h2>
+                <div class="stats-grid" id="stats-grid"></div>
+            </div>
+            <div class="card">
+                <h2>Заполненность тренировок</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Тренировка</th>
+                            <th>Тренер</th>
+                            <th>Дата</th>
+                            <th>Записано</th>
+                            <th>Мест</th>
+                            <th>Заполненность</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fill-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <div id="toast"></div>
+
+    <script>
+const API = '';
+const toast = msg => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display='block';
+  setTimeout(()=> t.style.display='none', 3000);
+};
+
+function show(sec) {
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(sec).classList.add('active');
+  event.target.classList.add('active');
+  if(sec==='members') loadMembers();
+  else if(sec==='workouts') loadWorkouts();
+  else if(sec==='memberships') { loadMemberships(); loadMembersSelect(); }
+  else loadStats();
+}
+
+// ─── Члены клуба ────────────────────────────────────────────────
+async function loadMembers() {
+  const r = await fetch(API+'/api/members');
+  const data = await r.json();
+  const tbody = document.getElementById('members-body');
+  tbody.innerHTML = data.map(m=>`
+    <tr>
+      <td>${m.id}</td><td>${m.fullName}</td><td>${m.phone}</td>
+      <td>${m.email}</td><td>${m.birthDate?.substring(0,10)}</td>
+      <td><button class='btn btn-danger' onclick='deleteMember(${m.id})'>Удалить</button></td>
+    </tr>`).join('');
+}
+
+async function addMember() {
+  const body = { fullName: document.getElementById('m-name').value,
+    phone: document.getElementById('m-phone').value,
+    email: document.getElementById('m-email').value,
+    birthDate: document.getElementById('m-birth').value+'T00:00:00Z' };
+  const r = await fetch(API+'/api/members', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok) { toast('Добавлено!'); loadMembers(); }
+  else toast('Ошибка: '+(await r.text()));
+}
+
+async function deleteMember(id) {
+  if(!confirm('Удалить члена клуба?')) return;
+  const r = await fetch(API+'/api/members/'+id, {method:'DELETE'});
+  if(r.ok) { toast('Удалено'); loadMembers(); }
+}
+
+// ─── Тренировки ─────────────────────────────────────────────────
+async function loadWorkouts() {
+  const r = await fetch(API+'/api/workouts');
+  const data = await r.json();
+  const tbody = document.getElementById('workouts-body');
+  tbody.innerHTML = data.map(w=>`
+    <tr>
+      <td>${w.name}</td><td>${w.trainer}</td>
+      <td>${new Date(w.startsAt).toLocaleString('ru')}</td>
+      <td>${w.durationMinutes} мин</td>
+      <td>${w.registered}/${w.maxParticipants}</td>
+      <td><button class='btn btn-danger' onclick='deleteWorkout(${w.id})'>Удалить</button></td>
+    </tr>`).join('');
+}
+
+async function addWorkout() {
+  const dt = document.getElementById('w-date').value;
+  const body = { name: document.getElementById('w-name').value,
+    trainer: document.getElementById('w-trainer').value,
+    description: document.getElementById('w-desc').value,
+    startsAt: dt ? new Date(dt).toISOString() : null,
+    durationMinutes: +document.getElementById('w-dur').value,
+    maxParticipants: +document.getElementById('w-cap').value };
+  const r = await fetch(API+'/api/workouts', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok) { toast('Тренировка добавлена!'); loadWorkouts(); }
+  else toast('Ошибка: '+(await r.text()));
+}
+
+async function deleteWorkout(id) {
+  if(!confirm('Удалить тренировку?')) return;
+  const r = await fetch(API+'/api/workouts/'+id, {method:'DELETE'});
+  if(r.ok) { toast('Удалено'); loadWorkouts(); }
+}
+
+// ─── Абонементы ─────────────────────────────────────────────────
+async function loadMembersSelect() {
+  const r = await fetch(API+'/api/members');
+  const data = await r.json();
+  const sel = document.getElementById('ms-member');
+  sel.innerHTML = '<option value="">-- Выберите члена --</option>';
+  data.forEach(m => sel.innerHTML += `<option value='${m.id}'>${m.fullName}</option>`);
+}
+
+async function loadMemberships() {
+  const r = await fetch(API+'/api/memberships');
+  const data = await r.json();
+  const tbody = document.getElementById('memberships-body');
+  tbody.innerHTML = data.map(m=>`
+    <tr>
+      <td>${m.memberName}</td><td>${m.type}</td>
+      <td>${m.startDate?.substring(0,10)}</td>
+      <td>${m.endDate?.substring(0,10)}</td>
+      <td>${m.price} руб.</td>
+      <td><span class='badge badge-${m.status==='Active'?'active':'expired'}'>${m.status}</span></td>
+      <td>${m.daysLeft > 0 ? m.daysLeft+' дн.' : 'Истёк'}</td>
+      <td><button class='btn btn-danger' onclick='deleteMembership(${m.id})'>✕</button></td>
+    </tr>`).join('');
+}
+
+async function addMembership() {
+  const body = { memberId: +document.getElementById('ms-member').value,
+    type: document.getElementById('ms-type').value,
+    price: +document.getElementById('ms-price').value,
+    startDate: document.getElementById('ms-start').value+'T00:00:00Z',
+    endDate: document.getElementById('ms-end').value+'T00:00:00Z',
+    status: 'Active' };
+  const r = await fetch(API+'/api/memberships', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok) { toast('Абонемент выдан!'); loadMemberships(); }
+  else toast('Ошибка: '+(await r.text()));
+}
+
+async function deleteMembership(id) {
+  if(!confirm('Удалить абонемент?')) return;
+  const r = await fetch(API+'/api/memberships/'+id, {method:'DELETE'});
+  if(r.ok) { toast('Удалено'); loadMemberships(); }
+}
+
+// ─── Статистика ──────────────────────────────────────────────────
+async function loadStats() {
+  const [mR, wR, msR] = await Promise.all([
+    fetch(API+'/api/members'),
+    fetch(API+'/api/workouts'),
+    fetch(API+'/api/memberships')
+  ]);
+  const members = await mR.json();
+  const workouts = await wR.json();
+  const mships = await msR.json();
+  const active = mships.filter(m=>m.status==='Active');
+  const revenue = active.reduce((s,m)=>s+m.price,0);
+  document.getElementById('stats-grid').innerHTML = `
+    <div class='stat-box'><div class='num'>${members.length}</div><div class='lbl'>Членов клуба</div></div>
+    <div class='stat-box'><div class='num'>${workouts.length}</div><div class='lbl'>Тренировок</div></div>
+    <div class='stat-box'><div class='num'>${active.length}</div><div class='lbl'>Активных абонементов</div></div>
+    <div class='stat-box'><div class='num'>${revenue.toFixed(0)}</div><div class='lbl'>Доход (руб.)</div></div>
+  `;
+  document.getElementById('fill-body').innerHTML = workouts.map(w=>{
+    const pct = Math.round(w.registered/w.maxParticipants*100);
+    return `<tr>
+      <td>${w.name}</td><td>${w.trainer}</td>
+      <td>${new Date(w.startsAt).toLocaleString('ru')}</td>
+      <td>${w.registered}</td><td>${w.maxParticipants}</td>
+      <td><div style='background:#e0e0e0;border-radius:4px;height:18px;width:120px'>
+        <div style='background:#2e75b6;height:100%;border-radius:4px;width:${pct}%'></div></div>
+        ${pct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// Загружаем данные при старте
+loadMembers();
+    </script>
+</body>
+</html>
