@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SportClubApi.Data;
 using SportClubApi.Models;
+using SportClubApi.Services;
 
 namespace SportClubApi.Controllers;
 
@@ -10,23 +11,29 @@ namespace SportClubApi.Controllers;
 public class MembersController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly CacheService _cache;
+    private const string AllKey = "members:all";
 
-    public MembersController(AppDbContext db)
+    public MembersController(AppDbContext db, CacheService cache)
     {
         _db = db;
+        _cache = cache;
     }
 
-    // GET api/members — список всех участников
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+        var cached = await _cache.GetAsync<List<Member>>(AllKey);
+        if (cached != null) return Ok(cached);
+
         var list = await _db.Members
             .Include(m => m.Memberships)
             .ToListAsync();
+
+        await _cache.SetAsync(AllKey, list, TimeSpan.FromMinutes(5));
         return Ok(list);
     }
 
-    // GET api/members/{id} — один участник с абонементами
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -36,24 +43,24 @@ public class MembersController : ControllerBase
 
         var member = await _db.Members
             .Include(m => m.Memberships)
-            .Include(m => m.WorkoutRegistrations)  // ← добавь эту строку
+            .Include(m => m.WorkoutRegistrations)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (member == null) return NotFound();
+
         await _cache.SetAsync(key, member, TimeSpan.FromMinutes(5));
         return Ok(member);
     }
 
-    // POST api/members — добавить нового участника
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Member member)
     {
         _db.Members.Add(member);
         await _db.SaveChangesAsync();
+        await _cache.RemoveAsync(AllKey);
         return CreatedAtAction(nameof(GetById), new { id = member.Id }, member);
     }
 
-    // PUT api/members/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Member updated)
     {
@@ -66,10 +73,11 @@ public class MembersController : ControllerBase
         member.BirthDate = updated.BirthDate;
 
         await _db.SaveChangesAsync();
+        await _cache.RemoveAsync(AllKey);
+        await _cache.RemoveAsync($"member:{id}");
         return Ok(member);
     }
 
-    // DELETE api/members/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -78,6 +86,8 @@ public class MembersController : ControllerBase
 
         _db.Members.Remove(member);
         await _db.SaveChangesAsync();
+        await _cache.RemoveAsync(AllKey);
+        await _cache.RemoveAsync($"member:{id}");
         return NoContent();
     }
 }

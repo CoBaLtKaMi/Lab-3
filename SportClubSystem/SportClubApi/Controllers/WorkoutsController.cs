@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportClubApi.Data;
 using SportClubApi.Models;
+using System.Text.Json;
 
 namespace SportClubApi.Controllers;
 
@@ -24,8 +25,36 @@ public class WorkoutsController : ControllerBase
 
     // POST api/workouts/{workoutId}/register
     [HttpPost("{workoutId}/register")]
-    public async Task<IActionResult> Register(int workoutId, [FromBody] int memberId)
+    public async Task<IActionResult> Register(int workoutId)
     {
+        // Read raw body
+        using var reader = new StreamReader(Request.Body);
+        var body = await reader.ReadToEndAsync();
+        
+        if (string.IsNullOrEmpty(body))
+            return BadRequest("Body cannot be empty");
+
+        int memberId;
+        
+        // Try to parse as JSON object {memberId: x}
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("memberId", out var memberIdElem))
+            {
+                memberId = memberIdElem.GetInt32();
+            }
+            else
+            {
+                return BadRequest("memberId not found in request body");
+            }
+        }
+        catch
+        {
+            return BadRequest("Invalid JSON format");
+        }
+
         var workout = await _context.Workouts.FindAsync(workoutId);
         if (workout == null)
             return NotFound("Тренировка не найдена");

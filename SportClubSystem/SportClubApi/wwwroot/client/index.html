@@ -1,289 +1,50 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Клиентский портал — SportClub</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f0f4f8;
-            color: #333;
-            min-height: 100vh;
-        }
-
-        header {
-            background: linear-gradient(135deg,#1a6e1a,#28a745);
-            color: #fff;
-            padding: 16px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-            header h1 {
-                font-size: 20px;
-            }
-
-        #user-info {
-            font-size: 14px;
-            background: rgba(255,255,255,.2);
-            padding: 6px 14px;
-            border-radius: 20px;
-        }
-
-        nav {
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,.08);
-            display: flex;
-            gap: 4px;
-            padding: 10px 30px;
-        }
-
-            nav button {
-                background: none;
-                border: none;
-                padding: 8px 18px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 600;
-                color: #555;
-                transition: all .2s;
-            }
-
-                nav button:hover, nav button.active {
-                    background: #e8f5e9;
-                    color: #28a745;
-                }
-
-        .container {
-            max-width: 1000px;
-            margin: 24px auto;
-            padding: 0 16px;
-        }
-
-        .login-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 70px);
-        }
-
-        .login-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 4px 24px rgba(0,0,0,.12);
-            text-align: center;
-        }
-
-            .login-card h2 {
-                color: #28a745;
-                margin-bottom: 8px;
-                font-size: 24px;
-            }
-
-            .login-card p {
-                color: #888;
-                font-size: 14px;
-                margin-bottom: 24px;
-            }
-
-            .login-card input {
-                width: 100%;
-                padding: 12px;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 16px;
-                margin-bottom: 16px;
-                outline: none;
-            }
-
-                .login-card input:focus {
-                    border-color: #28a745;
-                }
-
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.08);
-            margin-bottom: 20px;
-        }
-
-            .card h2 {
-                font-size: 18px;
-                color: #28a745;
-                border-bottom: 2px solid #e8f5e9;
-                padding-bottom: 8px;
-                margin-bottom: 16px;
-            }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .info-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 12px;
-        }
-
-            .info-item .label {
-                font-size: 12px;
-                color: #888;
-                margin-bottom: 4px;
-            }
-
-            .info-item .value {
-                font-size: 15px;
-                font-weight: 600;
-            }
-
-        .ms-box {
-            background: linear-gradient(135deg,#28a745,#1a6e1a);
-            color: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 12px;
-        }
-
-            .ms-box .ms-type {
-                font-size: 20px;
-                font-weight: 700;
-                margin-bottom: 8px;
-            }
-
-            .ms-box .ms-detail {
-                font-size: 13px;
-                opacity: .9;
-                margin-bottom: 4px;
-            }
-
-        .progress-bar {
-            background: rgba(255,255,255,.3);
-            border-radius: 8px;
-            height: 16px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #fff;
-            border-radius: 8px;
-            transition: width .5s;
-        }
-
-        .workout-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
-            gap: 16px;
-        }
-
-        .workout-card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.08);
-            border-left: 4px solid #28a745;
-        }
-
-            .workout-card h3 {
-                color: #1a6e1a;
-                margin-bottom: 8px;
-                font-size: 16px;
-            }
-
-            .workout-card p {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 4px;
-            }
-
-        .spots {
-            font-weight: 700;
-            color: #28a745;
-            font-size: 13px;
-        }
-
-            .spots.full {
-                color: #dc3545;
-            }
-
-        .btn {
-            padding: 9px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .btn-primary {
-            background: #28a745;
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: #fff;
-        }
-
-        .btn:hover {
-            opacity: .85;
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .no-ms {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: 16px;
-            color: #856404;
-        }
-
-        section {
-            display: none;
-        }
-
-            section.active {
-                display: block;
-            }
-
-        #toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #333;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            display: none;
-            font-size: 14px;
-            z-index: 9999;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; min-height: 100vh; }
+        header { background: linear-gradient(135deg,#1a6e1a,#28a745); color: #fff; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 20px; }
+        #user-info { font-size: 14px; background: rgba(255,255,255,.2); padding: 6px 14px; border-radius: 20px; }
+        nav { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); display: flex; gap: 4px; padding: 10px 30px; }
+        nav button { background: none; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; transition: all .2s; }
+        nav button:hover, nav button.active { background: #e8f5e9; color: #28a745; }
+        .container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+        .login-screen { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 70px); }
+        .login-card { background: #fff; border-radius: 16px; padding: 40px; max-width: 400px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,.12); text-align: center; }
+        .login-card h2 { color: #28a745; margin-bottom: 8px; font-size: 24px; }
+        .login-card p { color: #888; font-size: 14px; margin-bottom: 24px; }
+        .login-card input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; margin-bottom: 16px; outline: none; }
+        .login-card input:focus { border-color: #28a745; }
+        .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.08); margin-bottom: 20px; }
+        .card h2 { font-size: 18px; color: #28a745; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; margin-bottom: 16px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-item { background: #f8f9fa; border-radius: 8px; padding: 12px; }
+        .info-item .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+        .info-item .value { font-size: 15px; font-weight: 600; }
+        .ms-box { background: linear-gradient(135deg,#28a745,#1a6e1a); color: #fff; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+        .ms-box .ms-type { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .ms-box .ms-detail { font-size: 13px; opacity: .9; margin-bottom: 4px; }
+        .workout-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 16px; }
+        .workout-card { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.08); border-left: 4px solid #28a745; }
+        .workout-card h3 { color: #1a6e1a; margin-bottom: 8px; font-size: 16px; }
+        .workout-card p { font-size: 13px; color: #666; margin-bottom: 4px; }
+        .btn { padding: 9px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; width: 100%; margin-top: 10px; }
+        .btn-primary { background: #28a745; color: #fff; }
+        .btn-danger { background: #dc3545; color: #fff; }
+        .btn:hover { opacity: .85; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .no-ms { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 16px; color: #856404; }
+        section { display: none; }
+        section.active { display: block; }
+        #toast { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; display: none; font-size: 14px; z-index: 9999; }
     </style>
 </head>
 <body>
-
     <div id="login-view" class="login-screen">
         <div class="login-card">
             <h2>🏃 SportClub</h2>
@@ -345,10 +106,7 @@
             if (!id || id < 1) { showToast('Введите корректный ID'); return; }
 
             fetch(API + '/api/members/' + id)
-                .then(r => {
-                    if (!r.ok) throw new Error('Участник не найден');
-                    return r.json();
-                })
+                .then(r => { if (!r.ok) throw new Error('Участник не найден'); return r.json(); })
                 .then(m => {
                     memberId = id;
                     document.getElementById('login-view').style.display = 'none';
@@ -370,6 +128,37 @@
                             <div class="info-item"><div class="label">Email</div><div class="value">${m.email}</div></div>
                             <div class="info-item"><div class="label">Зарегистрирован</div><div class="value">${(m.registeredAt || '').substring(0, 10)}</div></div>
                         </div>`;
+                    loadMemberships();
+                });
+        }
+
+        function loadMemberships() {
+            fetch(API + '/api/memberships/member/' + memberId)
+                .then(r => r.json())
+                .then(memberships => {
+                    const msData = document.getElementById('ms-data');
+                    if (!memberships || memberships.length === 0) {
+                        msData.innerHTML = '<div class="no-ms">У вас нет активных абонементов</div>';
+                        return;
+                    }
+                    let html = '';
+                    memberships.forEach(ms => {
+                        const isActive = ms.status === 'Active';
+                        const daysLeft = Math.max(0, Math.ceil((new Date(ms.endDate) - new Date()) / (1000 * 60 * 60 * 24)));
+                        html += `<div class="ms-box">
+                            <div class="ms-type">${ms.type}</div>
+                            <div class="ms-detail">Начало: ${ms.startDate ? ms.startDate.substring(0, 10) : 'N/A'}</div>
+                            <div class="ms-detail">Конец: ${ms.endDate ? ms.endDate.substring(0, 10) : 'N/A'}</div>
+                            <div class="ms-detail">Цена: ${ms.price} руб.</div>
+                            <div class="ms-detail">Статус: <strong>${isActive ? '✅ Активен' : '❌ Истёк'}</strong></div>
+                            ${isActive ? `<div class="ms-detail">Осталось: ${daysLeft} дней</div>` : ''}
+                        </div>`;
+                    });
+                    msData.innerHTML = html;
+                })
+                .catch(e => {
+                    document.getElementById('ms-data').innerHTML = '<div class="no-ms">Ошибка загрузки</div>';
+                    console.error(e);
                 });
         }
 
@@ -379,20 +168,16 @@
                 .then(workouts => {
                     var grid = document.getElementById('schedule-grid');
                     var html = '';
-
                     workouts.forEach(w => {
-                        var isRegistered = false; // пока просто показываем все кнопки
-                        html += `
-                            <div class="workout-card">
-                                <h3>${w.name}</h3>
-                                <p>Тренер: ${w.trainer}</p>
-                                <p>Дата: ${new Date(w.startsAt).toLocaleString('ru')}</p>
-                                <p>Длительность: ${w.durationMinutes} минут</p>
-                                ${w.description ? `<p>${w.description}</p>` : ''}
-                                <button class="btn btn-primary" onclick="doRegister(${w.id})">Записаться</button>
-                            </div>`;
+                        html += `<div class="workout-card">
+                            <h3>${w.name}</h3>
+                            <p>Тренер: ${w.trainer}</p>
+                            <p>Дата: ${new Date(w.startsAt).toLocaleString('ru')}</p>
+                            <p>Длительность: ${w.durationMinutes} минут</p>
+                            ${w.description ? `<p>${w.description}</p>` : ''}
+                            <button class="btn btn-primary" onclick="doRegister(${w.id})">Записаться</button>
+                        </div>`;
                     });
-
                     grid.innerHTML = html || '<p>Нет тренировок</p>';
                 });
         }
@@ -402,12 +187,12 @@
                 const response = await fetch(API + '/api/workouts/' + workoutId + '/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ memberId: memberId })   // ← ИЗМЕНЕНО
+                    body: JSON.stringify({memberId:memberId})
                 });
 
                 if (response.ok) {
                     showToast('✅ Вы успешно записаны!');
-                    loadMyWorkouts();        // сразу обновляем вкладку "Мои записи"
+                    loadMyWorkouts();
                 } else {
                     const text = await response.text();
                     showToast('❌ ' + (text || 'Не удалось записаться'));
@@ -436,14 +221,13 @@
 
                             var html = '';
                             myWorkouts.forEach(w => {
-                                html += `
-                                    <div class="workout-card">
-                                        <h3>${w.name}</h3>
-                                        <p>Тренер: ${w.trainer}</p>
-                                        <p>Дата: ${new Date(w.startsAt).toLocaleString('ru')}</p>
-                                        <p>Длительность: ${w.durationMinutes} минут</p>
-                                        <button class="btn btn-danger" onclick="doUnregister(${w.id})">Отменить запись</button>
-                                    </div>`;
+                                html += `<div class="workout-card">
+                                    <h3>${w.name}</h3>
+                                    <p>Тренер: ${w.trainer}</p>
+                                    <p>Дата: ${new Date(w.startsAt).toLocaleString('ru')}</p>
+                                    <p>Длительность: ${w.durationMinutes} минут</p>
+                                    <button class="btn btn-danger" onclick="doUnregister(${w.id})">Отменить запись</button>
+                                </div>`;
                             });
                             grid.innerHTML = html;
                         });
@@ -457,12 +241,15 @@
                         showToast('Запись отменена');
                         loadMyWorkouts();
                     } else {
-                        showToast('Не удалось отменить');
+                        showToast('Не удалось отменить (ошибка ' + r.status + ')');
                     }
+                })
+                .catch(e => {
+                    showToast('Ошибка соединения');
+                    console.error(e);
                 });
         }
 
-        // Enter в поле логина
         document.getElementById('login-id').addEventListener('keypress', e => {
             if (e.key === 'Enter') doLogin();
         });

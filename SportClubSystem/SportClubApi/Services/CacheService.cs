@@ -1,5 +1,6 @@
-﻿using StackExchange.Redis;
+using StackExchange.Redis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SportClubApi.Services;
 
@@ -17,13 +18,21 @@ public class CacheService
     {
         var val = await _db.StringGetAsync(key);
         if (val.IsNullOrEmpty) return default;
-        return JsonSerializer.Deserialize<T>(val!);
+        var options = new JsonSerializerOptions
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+        };
+        return JsonSerializer.Deserialize<T>(val!, options);
     }
 
     // Сохранить данные в кэш с временем жизни TTL
     public async Task SetAsync<T>(string key, T value, TimeSpan ttl)
     {
-        var json = JsonSerializer.Serialize(value);
+        var options = new JsonSerializerOptions
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+        };
+        var json = JsonSerializer.Serialize(value, options);
         await _db.StringSetAsync(key, json, ttl);
     }
 

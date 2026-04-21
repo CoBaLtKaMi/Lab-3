@@ -1,0 +1,17 @@
+.vs
+.vscode
+bin
+obj
+node_modules
+dist
+.git
+.gitignore
+README.md
+*.log
+.DS_Store
+.env.local
+.idea
+*.swp
+*.swo
+*~
+Thumbs.db
