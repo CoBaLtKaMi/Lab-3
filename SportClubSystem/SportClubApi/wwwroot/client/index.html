@@ -105,7 +105,7 @@
             var id = parseInt(document.getElementById('login-id').value);
             if (!id || id < 1) { showToast('Введите корректный ID'); return; }
 
-            fetch(API + '/api/members/' + id)
+            fetch(API + '/api/members/' + id + '?t=' + Date.now())
                 .then(r => { if (!r.ok) throw new Error('Участник не найден'); return r.json(); })
                 .then(m => {
                     memberId = id;
@@ -118,7 +118,7 @@
         }
 
         function loadProfile() {
-            fetch(API + '/api/members/' + memberId)
+            fetch(API + '/api/members/' + memberId + '?t=' + Date.now())
                 .then(r => r.json())
                 .then(m => {
                     document.getElementById('profile-data').innerHTML = `
@@ -133,7 +133,7 @@
         }
 
         function loadMemberships() {
-            fetch(API + '/api/memberships/member/' + memberId)
+            fetch(API + '/api/memberships/member/' + memberId + '?t=' + Date.now())
                 .then(r => r.json())
                 .then(memberships => {
                     const msData = document.getElementById('ms-data');
@@ -163,7 +163,7 @@
         }
 
         function loadSchedule() {
-            fetch(API + '/api/workouts')
+            fetch(API + '/api/workouts?t=' + Date.now())
                 .then(r => r.json())
                 .then(workouts => {
                     var grid = document.getElementById('schedule-grid');
@@ -204,10 +204,10 @@
         }
 
         function loadMyWorkouts() {
-            fetch(API + '/api/workouts')
+            fetch(API + '/api/workouts?t=' + Date.now())
                 .then(r => r.json())
                 .then(allWorkouts => {
-                    fetch(API + '/api/members/' + memberId)
+                    fetch(API + '/api/members/' + memberId + '?t=' + Date.now())
                         .then(r => r.json())
                         .then(member => {
                             const registeredIds = (member.workoutRegistrations || []).map(r => r.workoutId);
@@ -239,7 +239,7 @@
                 .then(r => {
                     if (r.ok) {
                         showToast('Запись отменена');
-                        loadMyWorkouts();
+                        setTimeout(loadMyWorkouts, 100);
                     } else {
                         showToast('Не удалось отменить (ошибка ' + r.status + ')');
                     }

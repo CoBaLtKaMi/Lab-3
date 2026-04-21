@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -138,6 +138,10 @@
                 font-size: 14px;
             }
 
+            .form-row input[type="datetime-local"] {
+                min-width: 220px;
+            }
+
         .badge {
             padding: 3px 10px;
             border-radius: 12px;
@@ -252,8 +256,8 @@
                     <input id="w-trainer" placeholder="Тренер">
                     <input id="w-desc" placeholder="Описание">
                     <input id="w-date" type="datetime-local">
-                    <input id="w-dur" type="number" placeholder="Мин.">
-                    <input id="w-cap" type="number" placeholder="Мест">
+                    <input id="w-dur" type="number" placeholder="Длительность (мин)">
+                    <input id="w-cap" type="number" placeholder="Макс участников">
                     <button class="btn btn-primary" onclick="addWorkout()">Добавить</button>
                 </div>
             </div>
@@ -266,7 +270,7 @@
                             <th>Тренер</th>
                             <th>Дата/время</th>
                             <th>Длит.</th>
-                            <th>Записано/Мест</th>
+                            <th>Записано/Место</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
@@ -359,7 +363,7 @@ function show(sec) {
 
 // ─── Члены клуба ────────────────────────────────────────────────
 async function loadMembers() {
-  const r = await fetch(API+'/api/members');
+  const r = await fetch(API+'/api/members?t='+Date.now());
   const data = await r.json();
   const tbody = document.getElementById('members-body');
   tbody.innerHTML = data.map(m=>`
@@ -389,15 +393,23 @@ async function deleteMember(id) {
 
 // ─── Тренировки ─────────────────────────────────────────────────
 async function loadWorkouts() {
-  const r = await fetch(API+'/api/workouts');
+  const r = await fetch(API+'/api/workouts?t='+Date.now());
   const data = await r.json();
   const tbody = document.getElementById('workouts-body');
-  tbody.innerHTML = data.map(w=>`
+  
+  // Загружаем кол-во регистраций для каждой тренировки
+  const workoutsWithCount = await Promise.all(data.map(async w => {
+    const cr = await fetch(API+'/api/workouts/'+w.id+'/registrations');
+    const cd = await cr.json();
+    return {...w, registeredCount: cd.count};
+  }));
+  
+  tbody.innerHTML = workoutsWithCount.map(w=>`
     <tr>
       <td>${w.name}</td><td>${w.trainer}</td>
       <td>${new Date(w.startsAt).toLocaleString('ru')}</td>
       <td>${w.durationMinutes} мин</td>
-      <td>${w.registered}/${w.maxParticipants}</td>
+      <td>${w.registeredCount}/${w.maxParticipants}</td>
       <td><button class='btn btn-danger' onclick='deleteWorkout(${w.id})'>Удалить</button></td>
     </tr>`).join('');
 }
@@ -424,7 +436,7 @@ async function deleteWorkout(id) {
 
 // ─── Абонементы ─────────────────────────────────────────────────
 async function loadMembersSelect() {
-  const r = await fetch(API+'/api/members');
+  const r = await fetch(API+'/api/members?t='+Date.now());
   const data = await r.json();
   const sel = document.getElementById('ms-member');
   sel.innerHTML = '<option value="">-- Выберите члена --</option>';
@@ -432,7 +444,7 @@ async function loadMembersSelect() {
 }
 
 async function loadMemberships() {
-  const r = await fetch(API+'/api/memberships');
+  const r = await fetch(API+'/api/memberships?t='+Date.now());
   const data = await r.json();
   const tbody = document.getElementById('memberships-body');
   tbody.innerHTML = data.map(m=>`
@@ -469,9 +481,9 @@ async function deleteMembership(id) {
 // ─── Статистика ──────────────────────────────────────────────────
 async function loadStats() {
   const [mR, wR, msR] = await Promise.all([
-    fetch(API+'/api/members'),
-    fetch(API+'/api/workouts'),
-    fetch(API+'/api/memberships')
+    fetch(API+'/api/members?t='+Date.now()),
+    fetch(API+'/api/workouts?t='+Date.now()),
+    fetch(API+'/api/memberships?t='+Date.now())
   ]);
   const members = await mR.json();
   const workouts = await wR.json();
@@ -484,12 +496,20 @@ async function loadStats() {
     <div class='stat-box'><div class='num'>${active.length}</div><div class='lbl'>Активных абонементов</div></div>
     <div class='stat-box'><div class='num'>${revenue.toFixed(0)}</div><div class='lbl'>Доход (руб.)</div></div>
   `;
-  document.getElementById('fill-body').innerHTML = workouts.map(w=>{
-    const pct = Math.round(w.registered/w.maxParticipants*100);
+  
+  // Загружаем кол-во регистраций для каждой тренировки
+  const workoutsWithCount = await Promise.all(workouts.map(async w => {
+    const cr = await fetch(API+'/api/workouts/'+w.id+'/registrations');
+    const cd = await cr.json();
+    return {...w, registeredCount: cd.count};
+  }));
+  
+  document.getElementById('fill-body').innerHTML = workoutsWithCount.map(w=>{
+    const pct = Math.round(w.registeredCount/w.maxParticipants*100);
     return `<tr>
       <td>${w.name}</td><td>${w.trainer}</td>
       <td>${new Date(w.startsAt).toLocaleString('ru')}</td>
-      <td>${w.registered}</td><td>${w.maxParticipants}</td>
+      <td>${w.registeredCount}</td><td>${w.maxParticipants}</td>
       <td><div style='background:#e0e0e0;border-radius:4px;height:18px;width:120px'>
         <div style='background:#2e75b6;height:100%;border-radius:4px;width:${pct}%'></div></div>
         ${pct}%</td>
