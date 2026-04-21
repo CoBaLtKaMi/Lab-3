@@ -11,22 +11,7 @@
 - **Панель администратора** — полное управление клубом с статистикой и аналитикой
 - **Кэширование** — Redis для оптимизации производительности
 
-## 🏗️ Архитектура
 
-```
-SportClubSystem/
-├── SportClubApi/              # ASP.NET Core 8 backend
-│   ├── Controllers/           # API endpoints
-│   ├── Models/                # EF Core entities
-│   ├── Data/                  # Database context
-│   ├── Services/              # Business logic (CacheService)
-│   └── wwwroot/               # Статические файлы (HTML/CSS/JS)
-│       ├── client/            # Клиентский портал
-│       └── admin/             # Админ-панель
-├── nginx/                     # Reverse proxy
-├── docker-compose.yml         # Оркестрация контейнеров
-└── Dockerfile                 # Многоэтапная сборка образа
-```
 
 ## 🚀 Быстрый старт
 
@@ -34,20 +19,7 @@ SportClubSystem/
 - Docker и Docker Compose
 - Git
 
-### Установка и запуск
 
-```bash
-# Клонируем репозиторий
-git clone <repo-url>
-cd SportClubSystem
-
-# Запускаем контейнеры
-docker-compose up -d --build
-
-# API доступен по адресу: http://localhost/api
-# Админ-панель: http://localhost/admin
-# Клиентский портал: http://localhost/client
-```
 
 ## 📋 Сервисы
 
