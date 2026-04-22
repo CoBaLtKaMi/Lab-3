@@ -35,6 +35,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 
 var app = builder.Build();
 
+
 // ── 6. Миграции и тестовые данные ──────────────────────────────────
 Console.WriteLine("🚀 Применяем миграции...");
 using (var scope = app.Services.CreateScope())
@@ -47,6 +48,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ── 7. Middleware ───────────────────────────────────────────────────
+app.UseHttpMetrics();
 app.UseCors();
 app.UseSwagger(c =>
 {
@@ -57,7 +59,7 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "SportClub API v1");
     c.RoutePrefix = "swagger";
 });
-app.UseHttpMetrics();
+
 app.MapMetrics();
 app.UseStaticFiles();
 
