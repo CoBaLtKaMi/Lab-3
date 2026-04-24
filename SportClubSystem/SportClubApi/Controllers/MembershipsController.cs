@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportClubApi.Data;
 using SportClubApi.Models;
@@ -16,15 +16,20 @@ public class MembershipsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var list = await _db.Memberships.Include(m => m.Member).ToListAsync();
-        return Ok(list.Select(m => new {
-            m.Id,
-            m.Type,
-            m.StartDate,
-            m.EndDate,
-            m.Price,
-            m.Status,
-            MemberName = m.Member!.FullName,
-            DaysLeft = (int)(m.EndDate - DateTime.UtcNow).TotalDays
+        var now = DateTime.UtcNow;
+        return Ok(list.Select(m => {
+            var daysLeft = (int)(m.EndDate - now).TotalDays;
+            var status = daysLeft > 0 ? "Active" : "Expired";
+            return new {
+                m.Id,
+                m.Type,
+                m.StartDate,
+                m.EndDate,
+                m.Price,
+                Status = status,
+                MemberName = m.Member!.FullName,
+                DaysLeft = daysLeft
+            };
         }));
     }
 
@@ -50,8 +55,13 @@ public class MembershipsController : ControllerBase
     {
         var member = await _db.Members.FindAsync(membership.MemberId);
         if (member == null) return BadRequest("Член клуба не найден");
-        membership.StartDate = DateTime.SpecifyKind(membership.StartDate, DateTimeKind.Utc);
-        membership.EndDate = DateTime.SpecifyKind(membership.EndDate, DateTimeKind.Utc);
+        
+        // Преобразуем локальные даты в UTC
+        if (membership.StartDate.Kind == DateTimeKind.Unspecified)
+            membership.StartDate = DateTime.SpecifyKind(membership.StartDate, DateTimeKind.Local).ToUniversalTime();
+        if (membership.EndDate.Kind == DateTimeKind.Unspecified)
+            membership.EndDate = DateTime.SpecifyKind(membership.EndDate, DateTimeKind.Local).ToUniversalTime();
+        
         _db.Memberships.Add(membership);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = membership.Id }, membership);

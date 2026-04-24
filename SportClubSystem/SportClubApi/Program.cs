@@ -25,18 +25,21 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ── 4. Бизнес-метрики ───────────────────────────────────────────────
+builder.Services.AddScoped<BusinessMetricsService>();
+builder.Services.AddHostedService<MetricsUpdateWorker>();
 
-// ── 4. Статические файлы для веб-интерфейсов ───────────────────────
+// ── 5. Статические файлы для веб-интерфейсов ───────────────────────
 
 
-// ── 5. CORS — разрешаем запросы из браузера ────────────────────────
+// ── 6. CORS — разрешаем запросы из браузера ────────────────────────
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
 
 
-// ── 6. Миграции и тестовые данные ──────────────────────────────────
+// ── 7. Миграции и тестовые данные ──────────────────────────────────
 Console.WriteLine("🚀 Применяем миграции...");
 using (var scope = app.Services.CreateScope())
 {
@@ -47,7 +50,7 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine("✅ Seeding завершён.");
 }
 
-// ── 7. Middleware ───────────────────────────────────────────────────
+// ── 8. Middleware ───────────────────────────────────────────────────
 app.UseHttpMetrics();
 app.UseCors();
 app.UseSwagger(c =>
@@ -66,7 +69,7 @@ app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 
-// ── 8. Редиректы для открытия веб-интерфейсов ─────────────────────
+// ── 9. Редиректы для открытия веб-интерфейсов ─────────────────────
 app.MapGet("/admin", ctx => { ctx.Response.Redirect("/admin/index.html"); return Task.CompletedTask; });
 app.MapGet("/client", ctx => { ctx.Response.Redirect("/client/index.html"); return Task.CompletedTask; });
 

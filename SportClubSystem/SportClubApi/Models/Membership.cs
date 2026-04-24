@@ -12,5 +12,5 @@ public class Membership
     // Статусы: Active, Expired, Cancelled
     public string Status { get; set; } = "Active";
 
-    public Member Member { get; set; } = null!;
+    public Member? Member { get; set; }
 }
