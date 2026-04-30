@@ -20,10 +20,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore SportClubSystem/SportClubSystem.sln
 
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: dotnet build SportClubSystem/SportClubSystem.sln --no-restore -c Release
 
       - name: Run tests
-        run: dotnet test --no-build -c Release
+        run: dotnet test SportClubSystem/SportClubSystem.sln --no-build -c Release
